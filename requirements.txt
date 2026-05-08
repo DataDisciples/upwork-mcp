@@ -4,8 +4,3 @@ requests>=2.32.0
 python-dotenv>=1.0.0
 starlette>=0.36.0
 uvicorn[standard]>=0.30.0
-
-# Pipeline
-pandas>=2.0.0
-pyarrow>=14.0.0
-pydomo>=0.3.0.10

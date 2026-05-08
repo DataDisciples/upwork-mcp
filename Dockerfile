@@ -6,8 +6,6 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY src/ ./src/
-COPY pipeline/ ./pipeline/
-COPY datasets.json ./
 
 ENV MCP_TRANSPORT=http
 ENV HOST=0.0.0.0
