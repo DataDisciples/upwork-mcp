@@ -1,0 +1,63 @@
+name: upwork-to-domo
+
+# Daily ETL: extract from Upwork, push to Domo. Skips silently if either
+# credential set is missing (Upwork keys pending Upwork approval).
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Extract only; do not push to Domo"
+        required: false
+        default: "false"
+        type: choice
+        options: ["true", "false"]
+      only:
+        description: "Space-separated friendly names (e.g. upwork_contracts upwork_offers)"
+        required: false
+        default: ""
+  schedule:
+    - cron: "0 7 * * *"   # daily 07:00 UTC
+
+permissions:
+  contents: read
+
+jobs:
+  etl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install deps
+        run: pip install -r requirements.txt
+
+      - name: Run pipeline
+        env:
+          UPWORK_CLIENT_ID: ${{ secrets.UPWORK_CLIENT_ID }}
+          UPWORK_CLIENT_SECRET: ${{ secrets.UPWORK_CLIENT_SECRET }}
+          UPWORK_REFRESH_TOKEN: ${{ secrets.UPWORK_REFRESH_TOKEN }}
+          UPWORK_ACCESS_TOKEN: ${{ secrets.UPWORK_ACCESS_TOKEN }}
+          UPWORK_ORG_UID: ${{ secrets.UPWORK_ORG_UID }}
+          UPWORK_TOKEN_FILE: ""
+          DOMO_CLIENT_ID: ${{ secrets.DOMO_CLIENT_ID }}
+          DOMO_CLIENT_SECRET: ${{ secrets.DOMO_CLIENT_SECRET }}
+        run: |
+          if [ -z "$UPWORK_CLIENT_ID" ] || [ -z "$UPWORK_REFRESH_TOKEN" ]; then
+            echo "::warning::Upwork creds not yet available; skipping."
+            exit 0
+          fi
+          if [ -z "$DOMO_CLIENT_ID" ]; then
+            echo "::warning::Domo creds missing; running --dry-run only."
+            python -m pipeline.upwork_to_domo --dry-run
+            exit 0
+          fi
+          ARGS=""
+          if [ "${{ inputs.dry_run }}" = "true" ]; then ARGS="--dry-run"; fi
+          if [ -n "${{ inputs.only }}" ]; then ARGS="$ARGS --only ${{ inputs.only }}"; fi
+          python -m pipeline.upwork_to_domo $ARGS
