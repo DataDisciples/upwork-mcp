@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "whatsapp": {
+      "command": "/path/to/uv",
+      "args": [
+        "--directory",
+        "/path/to/whatsapp-mcp/whatsapp-mcp-server",
+        "run",
+        "main.py"
+      ],
+      "env": {
+        "WHATSAPP_API_BASE_URL": "https://YOUR-APP.railway.app"
+      }
+    }
+  }
+}
