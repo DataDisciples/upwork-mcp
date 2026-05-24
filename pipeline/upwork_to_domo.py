@@ -14,6 +14,9 @@ Built for a CLIENT/BUYER organization (you hire freelancers). Produces:
 Auth: reuses src/upwork_client.py (UPWORK_* env vars, same as the MCP server).
 Domo push (--push): reuses pipeline/domo_push.py (DOMO_* env vars).
 
+Credentials: export the env vars, OR drop a `.env` file in the repo root and
+this script loads it automatically (it's gitignored). See `.env.example`.
+
 Field selections are built by introspecting each GraphQL object type's SCALAR
 fields at runtime, so we pull every available column without hard-coding field
 lists that drift as Upwork changes the schema. The query *structure* and the
@@ -45,8 +48,31 @@ import os
 import sys
 from pathlib import Path
 
-# Make src/ importable so we reuse upwork_client.py without packaging.
 _REPO_ROOT = Path(__file__).resolve().parent.parent
+
+
+def _load_dotenv(path: Path) -> None:
+    """Minimal, dependency-free .env loader. Sets KEY=VALUE pairs that aren't
+    already in the environment. Ignores blank lines and `#` comments; strips
+    surrounding quotes. So you can keep creds in a gitignored `.env` instead of
+    exporting them every shell session."""
+    if not path.exists():
+        return
+    for raw in path.read_text().splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, val = line.partition("=")
+        key = key.strip()
+        val = val.strip().strip('"').strip("'")
+        if key and key not in os.environ:
+            os.environ[key] = val
+
+
+# Load a local .env (gitignored) before anything reads the environment.
+_load_dotenv(_REPO_ROOT / ".env")
+
+# Make src/ importable so we reuse upwork_client.py without packaging.
 sys.path.insert(0, str(_REPO_ROOT / "src"))
 
 from upwork_client import get_client  # noqa: E402
