@@ -13,6 +13,7 @@ source of truth for cross-repo conventions:
 - Recommendation-tracking discipline + capture-first refinement
 - PM discipline & critical-path analysis
 - Workflow & tooling gotchas
+- Async work & polling discipline — ScheduleWakeup vs auto-notifications
 
 ## upwork-mcp-specific notes
 
