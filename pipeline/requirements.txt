@@ -1,0 +1,9 @@
+# Dependencies for the Upwork -> Domo pipeline scripts (pipeline/*).
+# The MCP server itself does NOT need these; they're kept separate so the
+# server's Docker image stays lean. Install locally / in your Domo Jupyter
+# Workspace / in your scheduler with:
+#     pip install -r pipeline/requirements.txt
+
+requests>=2.32.0
+pandas>=2.0.0
+pydomo>=0.3.0
